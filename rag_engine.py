@@ -1,5 +1,6 @@
 import os
 import tempfile
+import time
 
 USER_AGENT = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
@@ -92,18 +93,30 @@ def initialize_vectorstore(documents):
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=settings.CHUNK_SIZE, chunk_overlap=settings.CHUNK_OVERLAP
     )
+
+    chunk_start = time.perf_counter()
     splits = text_splitter.split_documents(documents)
+    chunking_time = time.perf_counter() - chunk_start
+
     if not splits:
         raise ValueError("No text chunks could be created from the source.")
 
+    index_start = time.perf_counter()
     embeddings = get_embeddings()
     vectorstore = FAISS.from_documents(splits, embeddings)
+    indexing_time = time.perf_counter() - index_start
 
     chunk_info = {
         "total_chunks": len(splits),
         "chunk_size": settings.CHUNK_SIZE,
         "chunk_overlap": settings.CHUNK_OVERLAP,
         "total_docs": len(documents),
+        "total_chars": sum(len(d.page_content) for d in documents),
+        "avg_chunk_chars": round(
+            sum(len(s.page_content) for s in splits) / len(splits)
+        ),
+        "chunking_time": round(chunking_time, 2),
+        "indexing_time": round(indexing_time, 2),
     }
 
     return vectorstore, chunk_info

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Browser-like `User-Agent` and request timeout for URL ingestion.
 - Guards for unsupported file formats and empty/unreadable sources.
 - `python-docx`-based `.docx` text extraction, including tables.
+- Ingestion and per-response performance metrics (total chunks, characters, average chunk size, load/chunking/embedding timings, response time).
 - README and CHANGELOG documentation.
 
 ### Changed

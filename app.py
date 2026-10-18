@@ -1,3 +1,5 @@
+import time
+
 import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage
 
@@ -55,11 +57,25 @@ with st.sidebar:
     if "chunk_info" in st.session_state and st.session_state.chunk_info:
         info = st.session_state.chunk_info
         st.success("Status: Vector Store Online 🟢")
-        st.metric(label="Total Chunks Created", value=info["total_chunks"])
-        with st.expander("View Chunk Parameters"):
+
+        left, right = st.columns(2)
+        left.metric(label="Total Chunks", value=f"{info['total_chunks']:,}")
+        right.metric(label="Ingestion Time", value=f"{info['total_time']}s")
+        left.metric(label="Source Docs/Pages", value=f"{info['total_docs']:,}")
+        right.metric(label="Total Characters", value=f"{info['total_chars']:,}")
+
+        response_time = st.session_state.get("last_response_time")
+        if response_time is not None:
+            st.metric(label="Last Response Time", value=f"{response_time}s")
+
+        with st.expander("View Chunk Parameters & Timings"):
             st.write(f"**Chunk Size:** {info['chunk_size']} chars")
             st.write(f"**Chunk Overlap:** {info['chunk_overlap']} chars")
-            st.write(f"**Source Pages/Docs:** {info['total_docs']}")
+            st.write(f"**Avg Chunk Size:** {info['avg_chunk_chars']} chars")
+            st.write(f"**Load/Parsing Time:** {info['load_time']}s")
+            st.write(f"**Chunking Time:** {info['chunking_time']}s")
+            st.write(f"**Embedding/Index Time:** {info['indexing_time']}s")
+            st.write(f"**Total Ingestion Time:** {info['total_time']}s")
     else:
         st.warning("Status: Awaiting Source 🟠")
 
@@ -70,6 +86,8 @@ if "rag_chain" not in st.session_state:
     st.session_state.rag_chain = None
 if "chunk_info" not in st.session_state:
     st.session_state.chunk_info = None
+if "last_response_time" not in st.session_state:
+    st.session_state.last_response_time = None
 
 # --- Ingestion Process Action ---
 if process_btn:
@@ -82,13 +100,23 @@ if process_btn:
     else:
         with st.spinner("🔄 Parsing content and calculating embeddings..."):
             try:
+                load_start = time.perf_counter()
                 raw_docs = load_source_documents(uploaded_file, url_input, source_type)
+                load_time = round(time.perf_counter() - load_start, 2)
                 if raw_docs:
                     vstore, chunk_metadata = initialize_vectorstore(raw_docs)
+                    chunk_metadata["load_time"] = load_time
+                    chunk_metadata["total_time"] = round(
+                        load_time
+                        + chunk_metadata["chunking_time"]
+                        + chunk_metadata["indexing_time"],
+                        2,
+                    )
                     st.session_state.rag_chain = build_rag_chain(vstore)
                     st.session_state.chunk_info = chunk_metadata
+                    st.session_state.last_response_time = None
                     st.session_state.chat_history = []  # Reset thread
-                    st.success("Indexing complete!")
+                    st.success(f"Indexing complete in {chunk_metadata['total_time']}s!")
                     st.rerun()
                 else:
                     st.error("Could not extract content from source.")
@@ -120,6 +148,7 @@ if user_query:
         with st.chat_message("assistant"):
             try:
                 response_placeholder = st.empty()
+                query_start = time.perf_counter()
 
                 def stream_generator():
                     for chunk in st.session_state.rag_chain.stream(
@@ -132,6 +161,9 @@ if user_query:
                             yield chunk["answer"]
 
                 answer = response_placeholder.write_stream(stream_generator())
+                elapsed = round(time.perf_counter() - query_start, 2)
+                st.session_state.last_response_time = elapsed
+                st.caption(f"⏱️ Response time: {elapsed}s")
                 st.session_state.chat_history.append(AIMessage(content=answer))
 
             except Exception as e:  # noqa: BLE001 - never surface tracebacks in the UI
