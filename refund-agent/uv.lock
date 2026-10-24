@@ -428,6 +428,20 @@ wheels = [
 ]
 
 [[package]]
+name = "langchain"
+version = "1.4.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "langchain-core" },
+    { name = "langgraph" },
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d1/6b/7147b4cfa86091e05e3c0189952d976e13ef27249c8cd9e46d8c742a5b5c/langchain-1.4.7.tar.gz", hash = "sha256:818275348cd707f7fbbe92ece0a725c25823140a054cf29865f420e0200fa2af", size = 762840, upload-time = "2026-10-21T21:39:01.141Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/93/2e/86a102e61fc88ede073aebdb795fef0eb058a887bed4aa862e8ca2697565/langchain-1.4.7-py3-none-any.whl", hash = "sha256:bc40d4a9a46f0c3d75e316c0e576931fe19bceef83912a71dc1e0df781eb8f82", size = 170549, upload-time = "2026-10-21T21:38:59.466Z" },
+]
+
+[[package]]
 name = "langchain-core"
 version = "1.7.0"
 source = { registry = "https://pypi.org/simple" }
@@ -849,6 +863,15 @@ wheels = [
 ]
 
 [[package]]
+name = "python-dotenv"
+version = "1.2.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/74/26/2fbeedb218a787a5eea551c7532cac4e009f83d689dd2faa0d0353473f86/python_dotenv-1.2.4.tar.gz", hash = "sha256:f0d53e69935a851c0dcc78f3ab7aaccd8cabef0b92382b576b824212902873c0", size = 60824, upload-time = "2026-10-01T05:36:10Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/60/d1/38f3a3405989a89ac18390803e70c6ad7c7760da4f9b83cbeca0c44a0c72/python_dotenv-1.2.4-py3-none-any.whl", hash = "sha256:42269a8a5b3fd54ffa6f3d84b18abed50064717576b4ecf03dc4a55d8aa04fdc", size = 23266, upload-time = "2026-10-01T05:36:08.633Z" },
+]
+
+[[package]]
 name = "pyyaml"
 version = "6.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -900,11 +923,13 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
+    { name = "langchain" },
     { name = "langchain-core" },
     { name = "langchain-openai" },
     { name = "langgraph" },
     { name = "pydantic" },
     { name = "pytest" },
+    { name = "python-dotenv" },
     { name = "ruff" },
     { name = "uvicorn" },
 ]
@@ -912,11 +937,13 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.162.0" },
+    { name = "langchain", specifier = ">=1.4.7" },
     { name = "langchain-core", specifier = ">=1.7.0" },
     { name = "langchain-openai", specifier = ">=1.7.2" },
     { name = "langgraph", specifier = ">=1.2.17" },
     { name = "pydantic", specifier = ">=2.14.1" },
     { name = "pytest", specifier = ">=9.1.1" },
+    { name = "python-dotenv", specifier = ">=1.2.4" },
     { name = "ruff", specifier = ">=0.17.2" },
     { name = "uvicorn", specifier = ">=0.54.0" },
 ]
